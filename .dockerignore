@@ -1,0 +1,5 @@
+.dockerignore
+docker-compose.yml
+hubot.Dockerfile
+node_modules/
+generate-npm-package.sh

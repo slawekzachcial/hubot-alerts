@@ -1,0 +1,12 @@
+version: '3'
+services:
+  hubot:
+    build:
+      context: .
+      dockerfile: hubot.Dockerfile
+    depends_on:
+      - redis
+    environment:
+      REDIS_URL: redis://redis:6379
+  redis:
+    image: redis:alpine
