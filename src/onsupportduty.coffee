@@ -30,8 +30,8 @@ module.exports = (robot) ->
     markdown = ("* #{shiftAsString(shift)}" for shift in shifts).join("\n")
     res.reply markdown
 
-  robot.respond /hello/, (res) ->
-    res.reply "hello!"
+  # robot.respond /hello/, (res) ->
+  #   res.reply "hello!"
 
-  robot.hear /orly/, (res) ->
-    res.send "yarly"
+  # robot.hear /orly/, (res) ->
+  #   res.send "yarly"

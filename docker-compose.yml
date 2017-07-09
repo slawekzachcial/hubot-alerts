@@ -3,10 +3,12 @@ services:
   hubot:
     build:
       context: .
-      dockerfile: hubot.Dockerfile
+      dockerfile: hubot-docker/Dockerfile
     depends_on:
       - redis
     environment:
       REDIS_URL: redis://redis:6379
+    volumes:
+      - .:/opt/hubot-onsupportduty
   redis:
     image: redis:alpine

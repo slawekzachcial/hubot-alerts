@@ -1,0 +1,18 @@
+{
+  "name": "testbot",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Slawek Zachcial <slawek.zachcial@gmail.com>",
+  "description": "Test bot",
+  "dependencies": {
+    "hubot": "^2.19.0",
+    "hubot-diagnostics": "0.0.2",
+    "hubot-help": "^0.2.2",
+    "hubot-redis-brain": "0.0.4",
+    "hubot-onsupportduty": "file:../hubot-onsupportduty",
+    "hubot-scripts": "^2.17.2"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}
