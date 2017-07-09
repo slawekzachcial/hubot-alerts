@@ -27,8 +27,8 @@ shiftAsString = (shift) ->
 
 module.exports = (robot) ->
   robot.respond /shifts/, (res) ->
-    markdown = ("* #{shiftAsString(shift)}" for shift in shifts).join("\n")
-    res.reply markdown
+    markdownList = ("* #{shiftAsString(shift)}" for shift in shifts).join("\n")
+    res.reply "Here are currently defined shifts:\n#{markdownList}"
 
   # robot.respond /hello/, (res) ->
   #   res.reply "hello!"

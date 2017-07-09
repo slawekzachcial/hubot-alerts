@@ -14,10 +14,10 @@ describe 'onsupportduty', ->
 
   it 'responds to shifts', ->
     @room.user.say('alice', '@hubot shifts').then =>
-      expect(@room.messages).to.eql [
-        ['alice', '@hubot shifts']
-        ['hubot', '@alice *AMS']
-      ]
+      hubotReply = @room.messages[1][1]
+      console.log(hubotReply)
+      expect(hubotReply).to.include "currently defined shifts"
+
 
   # it 'responds to hello', ->
   #   @room.user.say('alice', '@hubot hello').then =>
