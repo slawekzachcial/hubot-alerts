@@ -17,4 +17,5 @@ WORKDIR /home/hubot/bot
 RUN npm install --save /home/hubot/hubot-onsupportduty && \
         echo '["hubot-redis-brain", "hubot-onsupportduty"]' > external-scripts.json
 
-ENTRYPOINT /home/hubot/bot/bin/hubot
+ENTRYPOINT ["/home/hubot/bot/bin/hubot"]
+CMD ["--alias", "/"]
