@@ -8,7 +8,8 @@ helper = new Helper('../src/onsupportduty.coffee')
 describe 'onsupportduty', ->
   beforeEach ->
     @room = helper.createRoom()
-    @hubotReply = () -> @room.messages[1][1]
+    @hubotReply = () ->
+      (reply[1] for reply in @room.messages when reply[0] is 'hubot').join("\n")
 
   afterEach ->
     @room.destroy()
@@ -16,15 +17,14 @@ describe 'onsupportduty', ->
   it 'responds to shifts', ->
     @room.user.say('alice', '@hubot shifts').then =>
       # console.log(@hubotReply())
-      expect(@hubotReply()).to.include "currently defined shifts"
+      expect(@hubotReply()).to.include("APJ").and.to.include("AMS").and.to.include("EMEA")
 
-  it 'responds to onsupportduty', ->
-    # TODO: don't use the key directly but rather a function to store shift
-    @room.robot.brain.set "shifts", { "APJ": ["@alice", "@carol"] }
-    @room.user.say('bob', '@hubot onsupportduty').then =>
+  it 'responds to shifts when users assigned', ->
+    @room.user.say('bob', '@hubot onsupportduty APJ @alice @carol')
+    @room.user.say('bob', '@hubot shifts').then =>
       expect(@hubotReply()).to.include("APJ").and.to.include("@carol")
 
-  it 'reponds to onsupportduty EMEA when users missing', ->
+  it 'responds to onsupportduty EMEA when users missing', ->
     @room.user.say('carol', '@hubot onsupportduty EMEA').then =>
       expect(@hubotReply()).to.include "Hmmm"
 

@@ -18,19 +18,37 @@
 # Author:
 #   Slawek Zachcial
 
-shifts = [{ "name": "APJ", "start": "00:00", "end": "08:00" },
-{ "name": "EMEA", "start": "08:00", "end": "16:00" },
-{ "name": "AMS", "start": "16:00", "end": "00:00" }]
-
-shiftAsString = (shift) ->
-  "#{shift.name}: #{shift.start}-#{shift.end} UTC"
-
-shiftsBrainKey = "shifts"
-
 module.exports = (robot) ->
 
+  class Shift
+    constructor: (@name, @start, @end, @users=[]) ->
+
+    toString: ->
+      "#{@name}: #{@start}-#{@end} UTC => #{@users}"
+
+  # initialize it as empty so we don't have to check each time it was initialized
+  robot.brain.set "shifts", {}
+
+  rememberShift = (shift) ->
+    shiftsInBrain = robot.brain.get "shifts"
+    shiftsInBrain[shift.name] = shift
+
+  findShift = (name) ->
+    shiftsInBrain = robot.brain.get "shifts"
+    shiftsInBrain[name]
+
+  shifts = ->
+    shiftsInBrain = robot.brain.get "shifts"
+    (shift for own name, shift of shiftsInBrain)
+
+  rememberShift(shift) for shift in \
+    [ new Shift("APJ", "00:00", "08:00"),
+      new Shift("EMEA", "08:00", "16:00"),
+      new Shift("AMS", "16:00", "00:00") ]
+
+
   robot.respond /shifts/, (res) ->
-    markdownList = ("* #{shiftAsString(shift)}" for shift in shifts).join("\n")
+    markdownList = ("* #{shift}" for shift in shifts()).join("\n")
     res.reply "Here are currently defined shifts:\n#{markdownList}"
 
 
@@ -38,34 +56,20 @@ module.exports = (robot) ->
     words = res.match[1].split(/[\s,]+/)
 
     if words.length < 2
-      res.reply "Hmmm, I need you to tell me the shift and user(s)"
+      res.reply "Hmmm, you need to tell me the shift name and user(s)"
       return
 
     shiftName = words[0]
     users = words[1..]
 
-    existingShift = s for s in shifts when s.name is shiftName
+    existingShift = findShift shiftName
     if not existingShift?
       res.reply "Hmmm, it seems #{shiftName} shift has not been defined"
       return
 
-    storedShifts = robot.brain.get shiftsBrainKey
-    if not storedShifts?
-      storedShifts = {}
-      robot.brain.set shiftsBrainKey, storedShifts
+    existingShift.users = users
 
-    storedShifts[shiftName] = users
-
-    res.reply "Shift users recorded: \
-      #{shiftAsString(existingShift)} => #{robot.brain.get(shiftsBrainKey)[shiftName]}"
-
-
-  robot.respond /onsupportduty/, (res) ->
-    storedShifts = robot.brain.get shiftsBrainKey
-    storedShifts = {} if not storedShifts?
-
-    markdownList = ("* #{shiftAsString(shift)} => #{storedShifts[shift.name] or "nobody yet"}" for shift in shifts).join("\n")
-    res.reply "Here are shifts with users:\n#{markdownList}"
+    res.reply "Shift users recorded: #{existingShift}"
 
 
   # robot.respond /hello/, (res) ->
