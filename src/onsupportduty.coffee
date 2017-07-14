@@ -5,8 +5,7 @@
 #   HUBOT_ON_SUPPORT_DUTY_SHIFTS="shift1=00:00-06:00,shift2=06:00-12:00,..."
 #
 # Commands:
-#   hubot shifts - prints UTC shifts hours
-#   hubot onsupportduty - prints people on shifts
+#   hubot shifts - prints shifts in UTC along assigned users
 #   hubot onsupportduty <shift> @user1 @user3 - assign users to shift
 #   hubot alerts - prints current alerts with assignees
 #   hubot alert ack <id> - accept working on alert
@@ -20,35 +19,37 @@
 
 module.exports = (robot) ->
 
+  # initialize it as empty so we don't have to check each time it was initialized
+  robot.brain.set "shifts", {}
+
+
   class Shift
     constructor: (@name, @start, @end, @users=[]) ->
 
     toString: ->
       "#{@name}: #{@start}-#{@end} UTC => #{@users}"
 
-  # initialize it as empty so we don't have to check each time it was initialized
-  robot.brain.set "shifts", {}
+    remember: ->
+      shiftsInBrain = robot.brain.get "shifts"
+      shiftsInBrain[@name] = this
 
-  rememberShift = (shift) ->
-    shiftsInBrain = robot.brain.get "shifts"
-    shiftsInBrain[shift.name] = shift
+    @find: (name) ->
+      shiftsInBrain = robot.brain.get "shifts"
+      shiftsInBrain[name]
 
-  findShift = (name) ->
-    shiftsInBrain = robot.brain.get "shifts"
-    shiftsInBrain[name]
+    @all: ->
+      shiftsInBrain = robot.brain.get "shifts"
+      (shift for own name, shift of shiftsInBrain)
 
-  shifts = ->
-    shiftsInBrain = robot.brain.get "shifts"
-    (shift for own name, shift of shiftsInBrain)
 
-  rememberShift(shift) for shift in \
+  shift.remember() for shift in \
     [ new Shift("APJ", "00:00", "08:00"),
       new Shift("EMEA", "08:00", "16:00"),
       new Shift("AMS", "16:00", "00:00") ]
 
 
   robot.respond /shifts/, (res) ->
-    markdownList = ("* #{shift}" for shift in shifts()).join("\n")
+    markdownList = ("* #{shift}" for shift in Shift.all()).join("\n")
     res.reply "Here are currently defined shifts:\n#{markdownList}"
 
 
@@ -62,7 +63,7 @@ module.exports = (robot) ->
     shiftName = words[0]
     users = words[1..]
 
-    existingShift = findShift shiftName
+    existingShift = Shift.find shiftName
     if not existingShift?
       res.reply "Hmmm, it seems #{shiftName} shift has not been defined"
       return
