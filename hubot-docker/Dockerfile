@@ -1,51 +1,30 @@
 FROM node:alpine
 
-# RUN adduser -s /bin/ash -D hubot
+RUN adduser -s /bin/ash -D testbot \
+    && npm install -g yo generator-hubot \
+    && su - testbot -c 'yo hubot --defaults'
 
-# RUN npm install -g yo generator-hubot
+ADD hubot-docker/package.json hubot-docker/external-scripts.json /home/testbot/
 
-# USER hubot
-
-# RUN mkdir -p /home/hubot/bot && \
-#     cd /home/hubot/bot && \
-#     yo hubot --defaults
-
-# ADD hubot-docker/package.json hubot-docker/external-scripts.json /home/hubot/bot/
-# ADD . /home/hubot/hubot-onsupportduty/
-
-# RUN chown -R hubot:hubot /home/hubot
-
-# USER hubot
-
-# WORKDIR /home/hubot/hubot-onsupportduty
-
-# RUN npm install
-
-# CMD ["npm", "test"]
-
-
-# WORKDIR /home/hubot/bot
-
-# RUN npm install --save /home/hubot/hubot-onsupportduty && npm install
-
-# ENTRYPOINT ["/home/hubot/bot/bin/hubot"]
-# CMD ["--alias", "/"]
-# CMD ["/home/hubot/bot/node_modules/.bin/mocha", "--compilers", "coffee:../bot/node_modules/coffee-script/register", "/home/hubot/hubot-onsupportduty/test/*.coffee"]
+RUN chown -R testbot:testbot /home/testbot
 
 VOLUME /opt/hubot-onsupportduty
-
-# RUN npm install -g yo generator-hubot && \
-#     mkdir -p /opt/testbot && \
-#     cd /opt/testbot && \
-#     yo hubot --defaults
-
-# ADD hubot-docker/package.json hubot-docker/external-scripts.json /opt/testbot/
-# RUN cd /opt/testbot && \
-#     npm install --save /opt/hubot-onsupportduty && \
-#     npm install && \
-#     npm prune
-
 WORKDIR /opt/hubot-onsupportduty
-RUN npm install
 
-CMD ["npm", "test"]
+# The complex command below is due to the following:
+# - I'm using /opt/hubot-onsupportduty volume instead of copying files into image
+#   - this allows to cache node_modules on the host and so is much faster when
+#     the content of hubot-onsupportduty module changes and dependencies have to be
+#     downloaded
+#   - volume content is not present during image build but only during container
+#     execution
+# - I depend on `tests` container to run `npm install` to ensure all dependencies
+#   are present. QUESTION: can this result in container start timing issues?
+# - Hubot does not seem to work as root so I'm running it as `testbot` user
+# - As `testbot` I'm adding hubot-onsupportduty as a local (folder) dependency
+# - I start hubot as `testbot` user
+# ENTRYPOINT ["/bin/sh", "-c", \
+#   "npm install && su - testbot -c 'npm install --save /opt/hubot-onsupportduty && bin/hubot --alias /'"]
+USER testbot
+WORKDIR /home/testbot
+ENTRYPOINT ["/bin/sh", "-c", "npm install --save /opt/hubot-onsupportduty && bin/hubot --alias /"]

@@ -1,14 +1,24 @@
 version: '3'
 services:
+  tests:
+    image: node:alpine
+    working_dir: /opt/hubot-onsupportduty
+    command: sh -c 'npm install && npm test'
+    volumes:
+      - .:/opt/hubot-onsupportduty
+    restart: "no"
   hubot:
     build:
       context: .
       dockerfile: hubot-docker/Dockerfile
     depends_on:
+      - tests
       - redis
     environment:
       REDIS_URL: redis://redis:6379
     volumes:
       - .:/opt/hubot-onsupportduty
+    environment:
+      HUBOT_ON_SUPPORT_DUTY_SHIFTS: APJ=23:00-07:00,EMEA=07:00-15:00,AMS=15:00-23:00
   redis:
     image: redis:alpine

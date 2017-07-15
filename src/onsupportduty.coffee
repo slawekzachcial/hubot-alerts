@@ -27,7 +27,7 @@ module.exports = (robot) ->
     constructor: (@name, @start, @end, @users=[]) ->
 
     toString: ->
-      "#{@name}: #{@start}-#{@end} UTC => #{@users}"
+      "#{@name}: #{@start}-#{@end} UTC => #{if @users.length is 0 then '[]' else @users}"
 
     remember: ->
       shiftsInBrain = robot.brain.get "shifts"
