@@ -33,6 +33,14 @@ module.exports = (robot) ->
       shiftsInBrain = robot.brain.get "shifts"
       shiftsInBrain[@name] = this
 
+    @fromString: (shiftString) ->
+      # console.log(shiftString)
+      matches = shiftString.match /(.*)=(\d\d:\d\d)-(\d\d:\d\d)/
+      if not matches? or matches.length isnt 4
+        throw new Error("Shift format error: expected name=ss:ss-ee:ee but got: #{shiftString}")
+      [entireMatch, name, start, end] = matches
+      new Shift(name, start, end)
+
     @find: (name) ->
       shiftsInBrain = robot.brain.get "shifts"
       shiftsInBrain[name]
@@ -41,11 +49,20 @@ module.exports = (robot) ->
       shiftsInBrain = robot.brain.get "shifts"
       (shift for own name, shift of shiftsInBrain)
 
+    @parse: (shiftsString) ->
+      (Shift.fromString(s) for s in shiftsString.split(","))
+
+  # Give access to Shift class in tests
+  robot.Shift = Shift
+
 
   shift.remember() for shift in \
-    [ new Shift("APJ", "00:00", "08:00"),
-      new Shift("EMEA", "08:00", "16:00"),
-      new Shift("AMS", "16:00", "00:00") ]
+    if process.env.HUBOT_ON_SUPPORT_DUTY_SHIFTS?
+      Shift.parse(process.env.HUBOT_ON_SUPPORT_DUTY_SHIFTS)
+    else
+      [ new Shift("APJ", "00:00", "08:00"),
+        new Shift("EMEA", "08:00", "16:00"),
+        new Shift("AMS", "16:00", "00:00") ]
 
 
   robot.respond /shifts/, (res) ->

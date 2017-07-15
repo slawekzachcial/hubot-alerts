@@ -9,7 +9,8 @@ describe 'onsupportduty', ->
   beforeEach ->
     @room = helper.createRoom()
     @hubotReply = () ->
-      (reply[1] for reply in @room.messages when reply[0] is 'hubot').join("\n")
+      hubotReplies = (reply[1] for reply in @room.messages when reply[0] is 'hubot')
+      hubotReplies.join("\n")
 
   afterEach ->
     @room.destroy()
@@ -35,6 +36,24 @@ describe 'onsupportduty', ->
   it 'responds to onsupportduty XXX @bob when shift undefined', ->
     @room.user.say('alice', '@hubot onsupportduty XXX @bob').then =>
       expect(@hubotReply()).to.include("not").and.to.include("defined")
+
+  it 'can parse shifts string', ->
+    shifts = @room.robot.Shift.parse("XX=00:00-01:00,YY=01:00-03:00,ZZ=03:00-00:00")
+    expect(shifts).to.have.lengthOf(3)
+    expect(shifts[1].name).to.equal("YY")
+    expect(shifts[2].start).to.equal("03:00")
+    expect(shifts[0].end).to.equal("01:00")
+
+  it 'detects error in shifts string', ->
+    # `fromString` variable is a function that returns a function.
+    # The reason: `expect` requires a function. Passing directly a function
+    # that closes over @room resulted in an `undefined` value error. In other
+    # words: fromString = () -> @room.robot.Shift.fromString("...") and then
+    # expect(fromString).to... did not work
+    fromString = (robot) ->
+      () -> robot.Shift.fromString("XX=:00-01")
+    expect(fromString(@room.robot)).to.throw(/format/i)
+
 
   # it 'responds to hello', ->
   #   @room.user.say('alice', '@hubot hello').then =>
