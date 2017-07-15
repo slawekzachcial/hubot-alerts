@@ -7,10 +7,10 @@
   "keywords": "hubot, hubot-scripts",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hubot-scripts/hubot-onsupportduty.git"
+    "url": "git://github.com/slawekzachcial/hubot-onsupportduty.git"
   },
   "bugs": {
-    "url": "https://github.com/hubot-scripts/hubot-onsupportduty/issues"
+    "url": "https://github.com/slawekzachcial/hubot-onsupportduty/issues"
   },
   "dependencies": {},
   "peerDependencies": {
