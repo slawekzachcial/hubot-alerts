@@ -13,18 +13,18 @@ const TextMessage = Hubot.TextMessage
 
 chai.use(require('sinon-chai'))
 
-describe('require("onsupportduty")', () => {
+describe('require("alerts")', () => {
   it('exports a function', () => {
     expect(require('../index')).to.be.a('Function')
   })
 })
 
-describe('onsupportduty', () => {
+describe('alerts', () => {
   let robot, user
 
   beforeEach(() => {
     robot = new Robot(null, 'mock-adapter-v3', false, 'hubot')
-    robot.loadFile(path.resolve('src/'), 'onsupportduty.js')
+    robot.loadFile(path.resolve('src/'), 'alerts.js')
     robot.adapter.on('connected', () => {
       robot.brain.userForId('1', {
         name: 'alice',
@@ -52,33 +52,33 @@ describe('onsupportduty', () => {
   })
 
 
-  it('responds to onsupportduty EMEA @bob @carol', (done) => {
+  it('responds to shifts EMEA @bob @carol', (done) => {
     robot.adapter.on('reply', function(envelope, strings) {
       const answer = strings[0]
       expect(answer).to.include('Shift users recorded')
       done()
     })
 
-    robot.adapter.receive(new TextMessage(user, '@hubot onsupportduty EMEA @bob @carol'))
+    robot.adapter.receive(new TextMessage(user, '@hubot shifts EMEA @bob @carol'))
   })
 
 
-  it('responds to onsupportduty EMEA when users missing', (done) => {
+  it('responds to shifts EMEA when users missing', (done) => {
     robot.adapter.on('reply', function(envelope, strings) {
       expect(strings[0]).to.include('Hmmm')
       done()
     })
 
-    robot.adapter.receive(new TextMessage(user, '@hubot onsupportduty EMEA'))
+    robot.adapter.receive(new TextMessage(user, '@hubot shifts EMEA'))
   })
 
 
-  it('responds to onsupportduty XXX @bob when shift undefined', (done) => {
+  it('responds to shifts XXX @bob when shift undefined', (done) => {
     robot.adapter.on('reply', function(envelope, strings) {
       expect(strings[0]).to.include("not").and.to.include("defined")
       done()
     })
-    robot.adapter.receive(new TextMessage(user, '@hubot onsupportduty XXX @bob'))
+    robot.adapter.receive(new TextMessage(user, '@hubot shifts XXX @bob'))
   })
 
 
@@ -94,7 +94,7 @@ describe('onsupportduty', () => {
       }
     })
 
-    robot.adapter.receive(new TextMessage(user, 'hubot onsupportduty APJ @alice @carol'))
+    robot.adapter.receive(new TextMessage(user, 'hubot shifts APJ @alice @carol'))
   })
 
 

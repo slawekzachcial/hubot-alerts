@@ -1,4 +1,4 @@
-# hubot-onsupportduty
+# hubot-alerts
 
 A hubot script that manages on-support-duty shifts and alerts
 

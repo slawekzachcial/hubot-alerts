@@ -3,11 +3,11 @@
 //   A hubot script that manages on-support-duty shifts and alerts
 //
 // Configuration:
-//   HUBOT_ON_SUPPORT_DUTY_SHIFTS="shift1=00:00-06:00,shift2=06:00-12:00,..."
+//   HUBOT_SHIFTS="shift1=00:00-06:00,shift2=06:00-12:00,..."
 //
 // Commands:
 //   hubot shifts - prints shifts in UTC along assigned users
-//   hubot onsupportduty <shift> @user1 @user3 - assign users to shift
+//   hubot shifts <shift> @user1 @user3 - assign users to shift
 //   hubot alerts - prints current alerts with assignees
 //   hubot alert ack <id> - accept working on alert
 //   hubot alert done <id> - confirm alerted problem fixed
@@ -70,21 +70,21 @@ module.exports = (robot) => {
     robot.Shift = Shift
   }
 
-  (process.env.HUBOT_ON_SUPPORT_DUTY_SHIFTS
-    ? Shift.parse(process.env.HUBOT_ON_SUPPORT_DUTY_SHIFTS)
+  (process.env.HUBOT_SHIFTS
+    ? Shift.parse(process.env.HUBOT_SHIFTS)
     : [ new Shift("APJ", "00:00", "08:00"),
         new Shift("EMEA", "08:00", "16:00"),
         new Shift("AMS", "16:00", "00:00") ])
     .forEach(shift => shift.remember())
 
 
-  robot.respond(/shifts/, (res) => {
+  robot.respond(/shifts$/, (res) => {
     const markdownList = Shift.all().map(s => `* ${s}`).join("\n")
     res.reply(`Here are currently defined shifts:\n${markdownList}`)
   })
 
 
-  robot.respond(/onsupportduty (.*)/, (res) => {
+  robot.respond(/shifts (.*)/, (res) => {
     const words = res.match[1].split(/[\s,]+/)
 
     if (words.length < 2) {

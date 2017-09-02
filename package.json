@@ -1,5 +1,5 @@
 {
-  "name": "hubot-onsupportduty",
+  "name": "hubot-alerts",
   "description": "A hubot script that manages on-support-duty shifts and alerts",
   "version": "1.0.0",
   "author": "Slawek Zachcial",
@@ -10,10 +10,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/slawekzachcial/hubot-onsupportduty.git"
+    "url": "git://github.com/slawekzachcial/hubot-alerts.git"
   },
   "bugs": {
-    "url": "https://github.com/slawekzachcial/hubot-onsupportduty/issues"
+    "url": "https://github.com/slawekzachcial/hubot-alerts/issues"
   },
   "dependencies": {},
   "peerDependencies": {

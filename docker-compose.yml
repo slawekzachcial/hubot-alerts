@@ -2,10 +2,10 @@ version: '3'
 services:
   tests:
     image: node:alpine
-    working_dir: /opt/hubot-onsupportduty
+    working_dir: /opt/hubot-alerts
     command: sh -c 'npm install && npm test'
     volumes:
-      - .:/opt/hubot-onsupportduty
+      - .:/opt/hubot-alerts
     restart: "no"
   hubot:
     build:
@@ -17,8 +17,8 @@ services:
     environment:
       REDIS_URL: redis://redis:6379
     volumes:
-      - .:/opt/hubot-onsupportduty
+      - .:/opt/hubot-alerts
     environment:
-      HUBOT_ON_SUPPORT_DUTY_SHIFTS: APJ=23:00-07:00,EMEA=07:00-15:00,AMS=15:00-23:00
+      HUBOT_SHIFTS: APJ=23:00-07:00,EMEA=07:00-15:00,AMS=15:00-23:00
   redis:
     image: redis:alpine
