@@ -25,10 +25,12 @@
     "hubot-mock-adapter-v3": "^1.0.1",
     "mocha": "^2.1.0",
     "sinon": "^1.13.0",
-    "sinon-chai": "^2.7.0"
+    "sinon-chai": "^2.7.0",
+    "standard": "^10.0.3"
   },
   "main": "index.js",
   "scripts": {
+    "pretest": "standard",
     "test": "mocha"
   }
 }
