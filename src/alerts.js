@@ -63,9 +63,28 @@ module.exports = (robot) => {
     }
   }
 
-  // Give access to Shift class in tests
+  // Based on https://prometheus.io/docs/alerting/notifications/#alert
+  // status: firing or resolved
+  // labels: alert metadata, e.g. { severity: "page" }
+  // annotations: additional information, e.g. { summary: "Server XYZ down", description: "Server XYZ has been down for 5 minutes" }
+  // startsAt: the time the alert started firing
+  // endsAt: the time the alert stopped firing
+  // generatorURL: the backlink to the entity that fired the alert
+  class Alert {
+    constructor ({status, labels, annotations, startsAt, endsAt, generatorURL}) {
+      this.status = (status && status.toLowerCase() === 'resolved' ? 'resolved' : 'firing')
+      this.labels = labels || {}
+      this.annotations = annotations || {}
+      this.startsAt = (startsAt ? Date.parse(startsAt) : new Date())
+      this.endsAt = (endsAt ? Date.parse(endsAt) : new Date(this.startsAt.getTime() + 5 * 60 * 1000))
+      this.generatorURL = generatorURL
+    }
+  }
+
+  // Give access to internal classes in tests
   if (robot.adapterName.match(/mock-adapter/gi)) {
     robot.Shift = Shift
+    robot.Alert = Alert
   }
 
   (process.env.HUBOT_SHIFTS
@@ -98,5 +117,21 @@ module.exports = (robot) => {
     existingShift.users = users
 
     res.reply(`Shift users recorded: ${existingShift}`)
+  })
+
+  robot.router.post('/hubot/alerts/:room', (request, response) => {
+    const room = request.params.room
+    const data = request.body
+    robot.emit('hubot-alerts:alert', {
+      room: room,
+      alert: new Alert(data)
+    })
+    response.send('OK')
+  })
+
+  robot.on('hubot-alerts:alert', (data) => {
+    const room = data.room
+    const alert = data.alert
+    robot.messageRoom(room, `Received #alert:\n${JSON.stringify(alert)}`)
   })
 }
