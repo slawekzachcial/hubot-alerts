@@ -46,6 +46,11 @@ describe('alerts', () => {
   })
 
   it('responds to shifts', (done) => {
+    [ new robot.Shift('APJ', '00:00', '08:00'),
+      new robot.Shift('EMEA', '08:00', '16:00'),
+      new robot.Shift('AMS', '16:00', '00:00') ]
+    .forEach(shift => shift.remember())
+
     robot.adapter.on('reply', function (envelope, strings) {
       const answer = strings[0]
       expect(answer).to.include('APJ').and.to.include('AMS').and.to.include('EMEA')
@@ -56,6 +61,11 @@ describe('alerts', () => {
   })
 
   it('responds to shifts EMEA @bob @carol', (done) => {
+    [ new robot.Shift('APJ', '00:00', '08:00'),
+      new robot.Shift('EMEA', '08:00', '16:00'),
+      new robot.Shift('AMS', '16:00', '00:00') ]
+    .forEach(shift => shift.remember())
+
     robot.adapter.on('reply', function (envelope, strings) {
       const answer = strings[0]
       expect(answer).to.include('Shift users recorded')
@@ -83,6 +93,11 @@ describe('alerts', () => {
   })
 
   it('responds to shifts when users assigned', (done) => {
+    [ new robot.Shift('APJ', '00:00', '08:00'),
+      new robot.Shift('EMEA', '08:00', '16:00'),
+      new robot.Shift('AMS', '16:00', '00:00') ]
+    .forEach(shift => shift.remember())
+
     robot.adapter.on('reply', function (envelope, strings) {
       const answer = strings[0]
       if (answer.match(/recorded/gi)) {
@@ -198,23 +213,86 @@ describe('alerts', () => {
   })
 
   it('has shifts matching alerts', (done) => {
-    const alert = new robot.Alert({startsAt: '2000-01-01T02:04:00Z'})
+    const test = (shiftStart, shiftEnd, alertStart) => {
+      return {
+        alert: new robot.Alert({startsAt: alertStart}),
+        shift: new robot.Shift('s', shiftStart, shiftEnd)
+      }
+    }
+    const matches = (t) => t.shift.matches(t.alert)
 
-    const s1 = new robot.Shift('s1', '00:00', '08:00')
-    expect(s1.matches(alert), `${s1} should match ${alert}`).to.equal(true)
-    const s2 = new robot.Shift('s2', '08:00', '16:00')
-    expect(s2.matches(alert), `${s2} should not match ${alert}`).to.equal(false)
-    const s3 = new robot.Shift('s3', '22:00', '03:00')
-    expect(s3.matches(alert), `${s3} should match ${alert}`).to.equal(true)
-    const s4 = new robot.Shift('s4', '02:04', '03:00')
-    expect(s4.matches(alert), `${s4} should match ${alert}`).to.equal(true)
-    const s5 = new robot.Shift('s5', '02:05', '03:00')
-    expect(s5.matches(alert), `${s5} should not match ${alert}`).to.equal(false)
-    const s6 = new robot.Shift('s6', '01:05', '03:00')
-    expect(s6.matches(alert), `${s6} should match ${alert}`).to.equal(true)
-    const s7 = new robot.Shift('s6', '22:00', '03:00')
-    const alert2 = new robot.Alert({startsAt: '2000-01-01T23:45:00Z'})
-    expect(s7.matches(alert2), `${s7} should match ${alert2}`).to.equal(true)
+    const t1 = test('00:00', '08:00', '2000-01-01T02:04:00Z')
+    expect(matches(t1), `${t1.shift} should match ${t1.alert.startsAt}`).to.equal(true)
+
+    const t2 = test('08:00', '16:00', '2000-01-01T02:04:00Z')
+    expect(matches(t2), `${t2.shift} should not match ${t2.alert.startsAt}`).to.equal(false)
+
+    const t3 = test('22:00', '03:00', '2000-01-01T02:04:00Z')
+    expect(matches(t3), `${t3.shift} should match ${t3.alert.startsAt}`).to.equal(true)
+
+    const t4 = test('02:04', '03:00', '2000-01-01T02:04:00Z')
+    expect(matches(t4), `${t4.shift} should match ${t4.alert.startsAt}`).to.equal(true)
+
+    const t5 = test('02:05', '03:00', '2000-01-01T02:04:00Z')
+    expect(matches(t5), `${t5.shift} should not match ${t5.alert.startsAt}`).to.equal(false)
+
+    const t6 = test('01:05', '03:00', '2000-01-01T02:04:00Z')
+    expect(matches(t6), `${t6.shift} should match ${t6.alert.startsAt}`).to.equal(true)
+
+    const t7 = test('22:00', '03:00', '2000-01-01T23:45:00Z')
+    expect(matches(t7), `${t7.shift} should match ${t7.alert.startsAt}`).to.equal(true)
+
+    const t8 = test('16:00', '00:00', '2017-09-17T02:00:00Z')
+    expect(matches(t8), `${t8.shift} should not match ${t8.alert.startsAt}`).to.equal(false)
+
     done()
+  })
+
+  it('finds matching shift\'s users', (done) => {
+    [ new robot.Shift('APJ', '00:00', '08:00', ['@alice']),
+      new robot.Shift('EMEA', '08:00', '16:00', ['@bob']),
+      new robot.Shift('AMS', '16:00', '00:00', ['@charlie']) ].forEach(shift => shift.remember())
+
+    robot.adapter.on('send', function (envelope, strings) {
+      const answer = strings[0]
+      expect(answer).to.include('alice')
+      done()
+    })
+
+    robot.http(alertsUrl)
+      .header('Content-Type', 'application/json')
+      .post(JSON.stringify({
+        startsAt: '2017-09-17T02:00:00Z'
+      }))((err, resp, body) => {
+        if (err) {
+          console.log(`ERROR: ${err}`)
+        } else {
+          setTimeout(() => {}, 1000)
+        }
+      })
+  })
+
+  it('mentions team if no matching shift\'s users found', (done) => {
+    [ new robot.Shift('APJ', '03:00', '08:00', ['@alice']),
+      new robot.Shift('EMEA', '08:00', '16:00', ['@bob']),
+      new robot.Shift('AMS', '16:00', '00:00', ['@charlie']) ].forEach(shift => shift.remember())
+
+    robot.adapter.on('send', function (envelope, strings) {
+      const answer = strings[0]
+      expect(answer).to.include('team')
+      done()
+    })
+
+    robot.http(alertsUrl)
+      .header('Content-Type', 'application/json')
+      .post(JSON.stringify({
+        startsAt: '2017-09-17T02:00:00Z'
+      }))((err, resp, body) => {
+        if (err) {
+          console.log(`ERROR: ${err}`)
+        } else {
+          setTimeout(() => {}, 1000)
+        }
+      })
   })
 })

@@ -66,13 +66,11 @@ module.exports = (robot) => {
       const shiftStart = this.start.hours * 60 + this.start.minutes
       const shiftEnd = this.end.hours * 60 + this.end.minutes
 
-      // without wrapping in Boolean(...) the 'else' returned expression is a Function
-      // rather than boolean value
       if (shiftStart <= shiftEnd) {
-        return Boolean(shiftStart <= alertStart && alertStart < shiftEnd)
+        return shiftStart <= alertStart && alertStart < shiftEnd
       } else {
-        return Boolean(((shiftStart <= alertStart && alertStart < 24 * 60) ||
-          (alertStart => 0 && alertStart < shiftEnd)))
+        return (shiftStart <= alertStart && alertStart < 24 * 60) ||
+          (alertStart >= 0 && alertStart < shiftEnd)
       }
     }
 
@@ -129,10 +127,9 @@ module.exports = (robot) => {
     robot.Alert = Alert
   }
 
-  (process.env.HUBOT_SHIFTS
-    ? Shift.parse(process.env.HUBOT_SHIFTS)
-    : [ new Shift('APJ', '00:00', '08:00'), new Shift('EMEA', '08:00', '16:00'), new Shift('AMS', '16:00', '00:00') ])
-    .forEach(shift => shift.remember())
+  if (process.env.HUBOT_SHIFTS) {
+    Shift.parse(process.env.HUBOT_SHIFTS)
+  }
 
   robot.respond(/shifts$/, (res) => {
     const markdownList = Shift.all().map(s => `* ${s}`).join('\n')
@@ -174,6 +171,9 @@ module.exports = (robot) => {
   robot.on('hubot-alerts:alert', (data) => {
     const room = data.room
     const alert = data.alert
-    robot.messageRoom(room, `Received #alert:\n${JSON.stringify(alert)}`)
+    const shifts = Shift.all().filter(shift => shift.matches(alert))
+    const users = ((shifts && shifts.length > 0 && shifts[0].users.length > 0) ? shifts[0].users : ['@team'])
+
+    robot.messageRoom(room, `${users.join(', ')}, received #alert:\n${JSON.stringify(alert)}`)
   })
 }
