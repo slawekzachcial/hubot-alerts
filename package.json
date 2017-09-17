@@ -17,11 +17,11 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "hubot": ">=2 <10 || 0.0.0-development"
+    "hubot": "slawekzachcial/hubot#robot-helpers-delegation"
   },
   "devDependencies": {
     "chai": "^2.1.1",
-    "hubot": "^3.0.1",
+    "hubot": "slawekzachcial/hubot#robot-helpers-delegation",
     "hubot-mock-adapter-v3": "^1.0.1",
     "mocha": "^2.1.0",
     "sinon": "^1.13.0",
