@@ -101,8 +101,8 @@ describe('alerts', () => {
     const shifts = robot.Shift.parse('XX=00:00-01:00,YY=01:00-03:00,ZZ=03:00-00:00')
     expect(shifts).to.have.lengthOf(3)
     expect(shifts[1].name).to.equal('YY')
-    expect(shifts[2].start).to.equal('03:00')
-    expect(shifts[0].end).to.equal('01:00')
+    expect(shifts[2].start.toString()).to.equal('03:00')
+    expect(shifts[0].end.toString()).to.equal('01:00')
     done()
   })
 
@@ -148,8 +148,8 @@ describe('alerts', () => {
     expect(alert.labels.severity).to.equal('page')
     expect(alert.annotations.summary).to.include('Oxygen')
     expect(alert.annotations.description).to.include('Houston')
-    expect(alert.startsAt).to.equal(start.getTime())
-    expect(alert.endsAt).to.equal(end.getTime())
+    expect(alert.startsAt.getTime()).to.equal(start.getTime())
+    expect(alert.endsAt.getTime()).to.equal(end.getTime())
     expect(alert.generatorURL).to.equal('https://apollo13.nasa.gov')
     done()
   })
@@ -170,7 +170,7 @@ describe('alerts', () => {
     })
   })
 
-  it('accepts alert in JSON format', (done) => {
+  it('accepts alerts in JSON format', (done) => {
     robot.on('hubot-alerts:alert', function (alertData) {
       const room = alertData.room
       const alert = alertData.alert
@@ -195,5 +195,26 @@ describe('alerts', () => {
           setTimeout(() => {}, 1000)
         }
       })
+  })
+
+  it('has shifts matching alerts', (done) => {
+    const alert = new robot.Alert({startsAt: '2000-01-01T02:04:00Z'})
+
+    const s1 = new robot.Shift('s1', '00:00', '08:00')
+    expect(s1.matches(alert), `${s1} should match ${alert}`).to.equal(true)
+    const s2 = new robot.Shift('s2', '08:00', '16:00')
+    expect(s2.matches(alert), `${s2} should not match ${alert}`).to.equal(false)
+    const s3 = new robot.Shift('s3', '22:00', '03:00')
+    expect(s3.matches(alert), `${s3} should match ${alert}`).to.equal(true)
+    const s4 = new robot.Shift('s4', '02:04', '03:00')
+    expect(s4.matches(alert), `${s4} should match ${alert}`).to.equal(true)
+    const s5 = new robot.Shift('s5', '02:05', '03:00')
+    expect(s5.matches(alert), `${s5} should not match ${alert}`).to.equal(false)
+    const s6 = new robot.Shift('s6', '01:05', '03:00')
+    expect(s6.matches(alert), `${s6} should match ${alert}`).to.equal(true)
+    const s7 = new robot.Shift('s6', '22:00', '03:00')
+    const alert2 = new robot.Alert({startsAt: '2000-01-01T23:45:00Z'})
+    expect(s7.matches(alert2), `${s7} should match ${alert2}`).to.equal(true)
+    done()
   })
 })
