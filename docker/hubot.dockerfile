@@ -1,15 +1,17 @@
 FROM node:alpine
 
-RUN adduser -s /bin/ash -D testbot \
+RUN apk add --no-cache git \
+    && adduser -s /bin/ash -D testbot \
     && npm install -g yo generator-hubot \
     && su - testbot -c 'yo hubot --defaults'
 
-ADD hubot-docker/package.json hubot-docker/external-scripts.json /home/testbot/
+ADD docker/package.json docker/external-scripts.json /home/testbot/
 
 RUN chown -R testbot:testbot /home/testbot
 
 VOLUME /opt/hubot-alerts
 WORKDIR /opt/hubot-alerts
+EXPOSE 8080
 
 # The complex command below is due to the following:
 # - I'm using /opt/hubot-alerts volume instead of copying files into image

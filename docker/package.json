@@ -5,7 +5,7 @@
   "author": "Slawek Zachcial <slawek.zachcial@gmail.com>",
   "description": "Test bot",
   "dependencies": {
-    "hubot": "^2.19.0",
+    "hubot": "slawekzachcial/hubot#robot-helpers-delegation",
     "hubot-diagnostics": "0.0.2",
     "hubot-help": "^0.2.2",
     "hubot-redis-brain": "0.0.4",

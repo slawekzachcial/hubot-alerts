@@ -1,21 +1,23 @@
 version: '3'
 services:
   tests:
-    image: node:alpine
-    working_dir: /opt/hubot-alerts
-    command: sh -c 'npm install && npm test'
+    build:
+      context: .
+      dockerfile: docker/tests.dockerfile
     volumes:
       - .:/opt/hubot-alerts
     restart: "no"
   hubot:
     build:
       context: .
-      dockerfile: hubot-docker/Dockerfile
+      dockerfile: docker/hubot.dockerfile
     depends_on:
       - tests
       - redis
     environment:
       REDIS_URL: redis://redis:6379
+    ports:
+      - "8080:8080"
     volumes:
       - .:/opt/hubot-alerts
     environment:
