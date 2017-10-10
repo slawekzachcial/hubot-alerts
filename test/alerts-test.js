@@ -17,6 +17,9 @@ process.env.EXPRESS_PORT = 8089
 const enableHttpd = true
 const alertsUrl = `http://localhost:${process.env.EXPRESS_PORT}/hubot/alerts/testRoom`
 
+const Shift = require('../src/shift.js')
+const Alert = require('../src/alert.js')
+
 describe('require(\'alerts\')', () => {
   it('exports a function', () => {
     expect(require('../index')).to.be.a('Function')
@@ -24,13 +27,12 @@ describe('require(\'alerts\')', () => {
 })
 
 describe('alerts', () => {
-  let robot, user, Shift, Alert
+  let robot, user, Shifts
 
   beforeEach(() => {
     robot = new Robot(null, 'mock-adapter-v3', enableHttpd, 'hubot')
     robot.loadFile(path.resolve('src/'), 'alerts.js')
-    Shift = require('../src/shift.js').use(robot.brain.get('shifts'))
-    Alert = require('../src/alert.js')
+    Shifts = Shift.manager(robot.brain.get('shifts'))
 
     robot.adapter.on('connected', () => {
       robot.brain.userForId('1', {
@@ -51,7 +53,7 @@ describe('alerts', () => {
     [ new Shift('APJ', '00:00', '08:00'),
       new Shift('EMEA', '08:00', '16:00'),
       new Shift('AMS', '16:00', '00:00') ]
-    .forEach(shift => shift.remember())
+    .forEach(shift => Shifts.store(shift))
 
     robot.adapter.on('reply', function (envelope, strings) {
       const answer = strings[0]
@@ -66,7 +68,7 @@ describe('alerts', () => {
     [ new Shift('APJ', '00:00', '08:00'),
       new Shift('EMEA', '08:00', '16:00'),
       new Shift('AMS', '16:00', '00:00') ]
-    .forEach(shift => shift.remember())
+    .forEach(shift => Shifts.store(shift))
 
     robot.adapter.on('reply', function (envelope, strings) {
       const answer = strings[0]
@@ -98,7 +100,7 @@ describe('alerts', () => {
     [ new Shift('APJ', '00:00', '08:00'),
       new Shift('EMEA', '08:00', '16:00'),
       new Shift('AMS', '16:00', '00:00') ]
-    .forEach(shift => shift.remember())
+    .forEach(shift => Shifts.store(shift))
 
     robot.adapter.on('reply', function (envelope, strings) {
       const answer = strings[0]
@@ -115,7 +117,7 @@ describe('alerts', () => {
   })
 
   it('can parse shifts string', (done) => {
-    const shifts = Shift.parse('XX=00:00-01:00,YY=01:00-03:00,ZZ=03:00-00:00')
+    const shifts = Shifts.parse('XX=00:00-01:00,YY=01:00-03:00,ZZ=03:00-00:00')
     expect(shifts).to.have.lengthOf(3)
     expect(shifts[1].name).to.equal('YY')
     expect(shifts[2].start.toString()).to.equal('03:00')
@@ -253,7 +255,7 @@ describe('alerts', () => {
   it('finds matching shift\'s users', (done) => {
     [ new Shift('APJ', '00:00', '08:00', ['@alice']),
       new Shift('EMEA', '08:00', '16:00', ['@bob']),
-      new Shift('AMS', '16:00', '00:00', ['@charlie']) ].forEach(shift => shift.remember())
+      new Shift('AMS', '16:00', '00:00', ['@charlie']) ].forEach(shift => Shifts.store(shift))
 
     robot.adapter.on('send', function (envelope, strings) {
       const answer = strings[0]
@@ -277,7 +279,7 @@ describe('alerts', () => {
   it('mentions team if no matching shift\'s users found', (done) => {
     [ new Shift('APJ', '03:00', '08:00', ['@alice']),
       new Shift('EMEA', '08:00', '16:00', ['@bob']),
-      new Shift('AMS', '16:00', '00:00', ['@charlie']) ].forEach(shift => shift.remember())
+      new Shift('AMS', '16:00', '00:00', ['@charlie']) ].forEach(shift => Shifts.store(shift))
 
     robot.adapter.on('send', function (envelope, strings) {
       const answer = strings[0]

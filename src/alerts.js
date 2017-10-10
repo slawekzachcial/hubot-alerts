@@ -22,15 +22,15 @@ module.exports = (robot) => {
   // TODO: use 'on loaded' event to initialize it
   robot.brain.set('shifts', {})
 
-  const Shift = require('./shift.js').use(robot.brain.get('shifts'))
+  const Shifts = require('./shift.js').manager(robot.brain.get('shifts'))
   const Alert = require('./alert.js')
 
   if (process.env.HUBOT_SHIFTS) {
-    Shift.parse(process.env.HUBOT_SHIFTS)
+    Shifts.parse(process.env.HUBOT_SHIFTS)
   }
 
   robot.respond(/shifts$/, (res) => {
-    const markdownList = Shift.all().map(s => `* ${s}`).join('\n')
+    const markdownList = Shifts.all().map(s => `* ${s}`).join('\n')
     res.reply(`Here are currently defined shifts:\n${markdownList}`)
   })
 
@@ -45,7 +45,7 @@ module.exports = (robot) => {
     const shiftName = words[0]
     const users = words.slice(1)
 
-    const existingShift = Shift.find(shiftName)
+    const existingShift = Shifts.find(shiftName)
     if (!existingShift) {
       res.reply(`Hmmm, it seems ${shiftName} shift has not been defined`)
       return
@@ -69,7 +69,7 @@ module.exports = (robot) => {
   robot.on('hubot-alerts:alert', (data) => {
     const room = data.room
     const alert = data.alert
-    const shifts = Shift.all().filter(shift => shift.matches(alert))
+    const shifts = Shifts.all().filter(shift => shift.matches(alert))
     const users = ((shifts && shifts.length > 0 && shifts[0].users.length > 0) ? shifts[0].users : ['@team'])
 
     robot.messageRoom(room, `${users.join(', ')}, received #alert:\n${JSON.stringify(alert)}`)
