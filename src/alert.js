@@ -7,7 +7,7 @@
 // startsAt: the time the alert started firing
 // endsAt: the time the alert stopped firing
 // generatorURL: the backlink to the entity that fired the alert
-module.exports = class {
+class Alert {
   constructor ({status, labels, annotations, startsAt, endsAt, generatorURL}) {
     this.status = (status && status.toLowerCase() === 'resolved' ? 'resolved' : 'firing')
     this.labels = labels || {}
@@ -21,3 +21,5 @@ module.exports = class {
     return JSON.stringify(this)
   }
 }
+
+module.exports = Alert

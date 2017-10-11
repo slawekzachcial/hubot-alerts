@@ -116,21 +116,6 @@ describe('alerts', () => {
     robot.adapter.receive(new TextMessage(user, 'hubot shifts APJ @alice @carol'))
   })
 
-  it('can parse shifts string', (done) => {
-    const shifts = Shifts.parse('XX=00:00-01:00,YY=01:00-03:00,ZZ=03:00-00:00')
-    expect(shifts).to.have.lengthOf(3)
-    expect(shifts[1].name).to.equal('YY')
-    expect(shifts[2].start.toString()).to.equal('03:00')
-    expect(shifts[0].end.toString()).to.equal('01:00')
-    done()
-  })
-
-  it('detects error in shifts string', (done) => {
-    const fromString = () => Shift.fromString('XX=:00-01')
-    expect(fromString).to.throw(/format/gi)
-    done()
-  })
-
   it('messageRoom delegates to adapter "send"', (done) => {
     robot.adapter.on('send', function (envelope, strings) {
       done()
