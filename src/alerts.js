@@ -57,13 +57,15 @@ module.exports = (robot) => {
   })
 
   robot.router.post('/hubot/alerts/:room', (request, response) => {
-    const room = request.params.room
-    const data = request.body
-    robot.emit('hubot-alerts:alert', {
-      room: room,
-      alert: new Alert(data)
-    })
-    response.send('OK')
+    try {
+      const room = request.params.room
+      const data = request.body
+      const alert = new Alert(data)
+      robot.emit('hubot-alerts:alert', { room, alert })
+      response.status(200).send(`Alert received: ${alert.hash}`)
+    } catch (err) {
+      response.status(400).send(err)
+    }
   })
 
   robot.on('hubot-alerts:alert', (data) => {

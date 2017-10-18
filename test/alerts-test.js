@@ -123,6 +123,17 @@ describe('alerts', () => {
     robot.messageRoom('testRoom', 'message from robot to testRoom')
   })
 
+  it('returns Bad Request for empty alerts', (done) => {
+    robot.http(alertsUrl)
+      .post()((err, response, body) => {
+        if (err) {
+          return done(err)
+        }
+        expect(response.statusCode).to.equal(400)
+        done()
+      })
+  })
+
   it('accepts alerts having only labels', (done) => {
     robot.adapter.on('send', function (envelope, strings) {
       const answer = strings[0]
@@ -136,10 +147,9 @@ describe('alerts', () => {
         labels: { component: 'oxygen_tank' }
       }))((err, response, body) => {
         if (err) {
-          console.log(`ERROR: ${err}`)
-        } else {
-          setTimeout(() => {}, 1000)
+          return done(err)
         }
+        setTimeout(() => {}, 1000)
       })
   })
 
@@ -166,10 +176,9 @@ describe('alerts', () => {
         generatorURL: 'https://apollo13.nasa.gov'
       }))((err, response, body) => {
         if (err) {
-          console.log(`ERROR: ${err}`)
-        } else {
-          setTimeout(() => {}, 1000)
+          return done(err)
         }
+        setTimeout(() => {}, 1000)
       })
   })
 
@@ -191,10 +200,9 @@ describe('alerts', () => {
         labels: { component: 'web' }
       }))((err, resp, body) => {
         if (err) {
-          console.log(`ERROR: ${err}`)
-        } else {
-          setTimeout(() => {}, 1000)
+          return done(err)
         }
+        setTimeout(() => {}, 1000)
       })
   })
 
@@ -216,10 +224,9 @@ describe('alerts', () => {
         labels: { component: 'web' }
       }))((err, resp, body) => {
         if (err) {
-          console.log(`ERROR: ${err}`)
-        } else {
-          setTimeout(() => {}, 1000)
+          return done(err)
         }
+        setTimeout(() => {}, 1000)
       })
   })
 })
