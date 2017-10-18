@@ -20,7 +20,7 @@ const alertsUrl = `http://localhost:${process.env.EXPRESS_PORT}/hubot/alerts/tes
 const Shift = require('../src/shift.js')
 
 describe('require(\'alerts\')', () => {
-  it('exports a function', () => {
+  it('exports a function', function () {
     expect(require('../index')).to.be.a('Function')
   })
 })
@@ -48,7 +48,7 @@ describe('alerts', () => {
     robot.shutdown()
   })
 
-  it('responds to shifts', (done) => {
+  it('responds to shifts', function (done) {
     [ new Shift('APJ', '00:00', '08:00'),
       new Shift('EMEA', '08:00', '16:00'),
       new Shift('AMS', '16:00', '00:00') ]
@@ -63,7 +63,7 @@ describe('alerts', () => {
     robot.adapter.receive(new TextMessage(user, 'hubot shifts'))
   })
 
-  it('responds to shifts EMEA @bob @carol', (done) => {
+  it('responds to shifts EMEA @bob @carol', function (done) {
     [ new Shift('APJ', '00:00', '08:00'),
       new Shift('EMEA', '08:00', '16:00'),
       new Shift('AMS', '16:00', '00:00') ]
@@ -78,7 +78,7 @@ describe('alerts', () => {
     robot.adapter.receive(new TextMessage(user, '@hubot shifts EMEA @bob @carol'))
   })
 
-  it('responds to shifts EMEA when users missing', (done) => {
+  it('responds to shifts EMEA when users missing', function (done) {
     robot.adapter.on('reply', function (envelope, strings) {
       expect(strings[0]).to.include('Hmmm')
       done()
@@ -87,7 +87,7 @@ describe('alerts', () => {
     robot.adapter.receive(new TextMessage(user, '@hubot shifts EMEA'))
   })
 
-  it('responds to shifts XXX @bob when shift undefined', (done) => {
+  it('responds to shifts XXX @bob when shift undefined', function (done) {
     robot.adapter.on('reply', function (envelope, strings) {
       expect(strings[0]).to.include('not').and.to.include('defined')
       done()
@@ -95,7 +95,7 @@ describe('alerts', () => {
     robot.adapter.receive(new TextMessage(user, '@hubot shifts XXX @bob'))
   })
 
-  it('responds to shifts when users assigned', (done) => {
+  it('responds to shifts when users assigned', function (done) {
     [ new Shift('APJ', '00:00', '08:00'),
       new Shift('EMEA', '08:00', '16:00'),
       new Shift('AMS', '16:00', '00:00') ]
@@ -115,7 +115,7 @@ describe('alerts', () => {
     robot.adapter.receive(new TextMessage(user, 'hubot shifts APJ @alice @carol'))
   })
 
-  it('messageRoom delegates to adapter "send"', (done) => {
+  it('messageRoom delegates to adapter "send"', function (done) {
     robot.adapter.on('send', function (envelope, strings) {
       done()
     })
@@ -123,7 +123,7 @@ describe('alerts', () => {
     robot.messageRoom('testRoom', 'message from robot to testRoom')
   })
 
-  it('returns Bad Request for empty alerts', (done) => {
+  it('returns Bad Request for empty alerts', function (done) {
     robot.http(alertsUrl)
       .post()((err, response, body) => {
         if (err) {
@@ -134,7 +134,7 @@ describe('alerts', () => {
       })
   })
 
-  it('accepts alerts having only labels', (done) => {
+  it('accepts alerts having only labels', function (done) {
     robot.adapter.on('send', function (envelope, strings) {
       const answer = strings[0]
       expect(answer).to.include('#alert')
@@ -153,7 +153,7 @@ describe('alerts', () => {
       })
   })
 
-  it('accepts alerts in JSON format', (done) => {
+  it('accepts alerts in JSON format', function (done) {
     robot.on('hubot-alerts:alert', function (alertData) {
       const room = alertData.room
       const alert = alertData.alert
@@ -182,7 +182,7 @@ describe('alerts', () => {
       })
   })
 
-  it('finds matching shift\'s users', (done) => {
+  it('finds matching shift\'s users', function (done) {
     [ new Shift('APJ', '00:00', '08:00', ['@alice']),
       new Shift('EMEA', '08:00', '16:00', ['@bob']),
       new Shift('AMS', '16:00', '00:00', ['@charlie']) ].forEach(shift => Shifts.store(shift))
@@ -206,7 +206,7 @@ describe('alerts', () => {
       })
   })
 
-  it('mentions team if no matching shift\'s users found', (done) => {
+  it('mentions team if no matching shift\'s users found', function (done) {
     [ new Shift('APJ', '03:00', '08:00', ['@alice']),
       new Shift('EMEA', '08:00', '16:00', ['@bob']),
       new Shift('AMS', '16:00', '00:00', ['@charlie']) ].forEach(shift => Shifts.store(shift))
