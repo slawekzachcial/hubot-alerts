@@ -1,5 +1,7 @@
 'use strict'
 
+const hash = require('object-hash')
+
 // Based on:
 // - https://prometheus.io/docs/alerting/notifications/#alert
 // - https://prometheus.io/docs/alerting/clients
@@ -20,8 +22,9 @@
 class Alert {
   constructor ({status, labels, annotations, startsAt, endsAt, generatorURL}) {
     if (!labels || Object.keys(labels) === 0 || labels.constructor !== Object) {
-      throw Error('Non-empty hash expected for Alert labels')
+      throw Error('labels hash is used to identify and deduplicate alerts - it cannot be empty!')
     }
+    this.hash = hash(labels)
     this.status = (status && status.toLowerCase() === 'resolved' ? 'resolved' : 'firing')
     this.labels = labels
     this.annotations = annotations || {}

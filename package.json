@@ -15,7 +15,9 @@
   "bugs": {
     "url": "https://github.com/slawekzachcial/hubot-alerts/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "object-hash": "^1.2.0"
+  },
   "peerDependencies": {
     "hubot": "slawekzachcial/hubot#robot-helpers-delegation"
   },
